@@ -71,8 +71,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Deployment Strategy
 
-### Development
-Simply open `index.html` in any web browser - no development server needed!
+### Development (Updated July 23, 2025)
+The game now runs with Python's built-in HTTP server on Replit:
+- **No Node.js dependencies**: Uses `python3 -m http.server 5000`
+- **Clean architecture**: Pure HTML/CSS/JavaScript files served statically
+- **Simple workflow**: Just click "Run" - no build process needed
 
 ### Production Deployment Options
 1. **Direct File Hosting**: Upload files to any web host (GitHub Pages, Netlify, etc.)
