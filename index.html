@@ -4,85 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brick Breaker Game</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            font-family: 'Arial', sans-serif;
-            color: white;
-        }
-
-        .game-container {
-            text-align: center;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        canvas {
-            border: 3px solid #fff;
-            border-radius: 10px;
-            background: #000;
-            display: block;
-            margin: 0 auto;
-        }
-
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .controls {
-            margin: 10px 0;
-            font-size: 14px;
-            opacity: 0.8;
-        }
-
-        .restart-btn {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-            transition: background 0.3s;
-        }
-
-        .restart-btn:hover {
-            background: #45a049;
-        }
-
-        .game-over, .game-win {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            font-size: 24px;
-            z-index: 10;
-        }
-
-        .powerup-info {
-            font-size: 12px;
-            margin: 5px 0;
-            opacity: 0.7;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
@@ -113,6 +35,6 @@
         </div>
     </div>
 
-    <script src="js/game.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>

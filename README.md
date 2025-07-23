@@ -45,9 +45,8 @@ A classic Brick Breaker arcade game built with pure HTML5, CSS3, and JavaScript.
 ```
 .
 ├── index.html          # Main game HTML file
-├── js/
-│   └── game.js        # Game logic and classes
-├── assets/            # Directory for future game assets
+├── style.css          # Game styling and layout
+├── game.js            # Game logic and classes
 └── README.md          # This file
 ```
 

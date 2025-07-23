@@ -18,9 +18,9 @@ Preferred communication style: Simple, everyday language.
 - **Offline Capable**: No network dependencies, runs entirely client-side
 
 ### File Structure
-- **index.html**: Main game file with embedded CSS styles
-- **js/game.js**: Complete game logic with all classes and game loop
-- **assets/**: Directory for future game assets (currently empty)
+- **index.html**: Main game HTML file
+- **style.css**: Game styling and layout
+- **game.js**: Complete game logic with all classes and game loop
 - **README.md**: Comprehensive documentation and instructions
 
 ### Technology Stack
