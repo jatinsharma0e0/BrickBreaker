@@ -813,7 +813,7 @@ class Powerup {
         this.colors = {
             largePaddle: '#4ecdc4',
             extraLife: '#ff6b6b',
-            multiBall: '#feca57',
+            multiBall: '#ffff00', // Bright yellow for multi-ball
             stickyPaddle: '#9b59b6',
             laserPaddle: '#e74c3c',
             slowMotion: '#3498db',
@@ -823,7 +823,7 @@ class Powerup {
         this.symbols = {
             largePaddle: null, // Custom rectangle
             extraLife: '❤️',
-            multiBall: 'M',
+            multiBall: null, // Custom triangle ball formation
             stickyPaddle: 'S',
             laserPaddle: '🔫',
             slowMotion: '⏳',
@@ -845,6 +845,83 @@ class Powerup {
                 ctx.strokeStyle = '#00cc66';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(this.position.x + 2, this.position.y + 6, this.width - 4, this.height - 12);
+            } else if (this.type === 'multiBall') {
+                // Draw custom multi-ball design: three balls in triangle formation with motion blur
+                ctx.fillStyle = this.colors[this.type];
+                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Calculate positions for three balls in triangle formation
+                const centerX = this.position.x + this.width / 2;
+                const centerY = this.position.y + this.height / 2;
+                const ballRadius = 2.5;
+                const spacing = 4;
+                
+                // Top ball
+                const topX = centerX;
+                const topY = centerY - spacing;
+                
+                // Bottom left ball
+                const bottomLeftX = centerX - spacing;
+                const bottomLeftY = centerY + spacing;
+                
+                // Bottom right ball
+                const bottomRightX = centerX + spacing;
+                const bottomRightY = centerY + spacing;
+                
+                // Draw motion blur lines first (behind balls)
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 1;
+                
+                // Motion blur lines for each ball
+                ctx.beginPath();
+                ctx.moveTo(topX - 3, topY);
+                ctx.lineTo(topX + 3, topY);
+                ctx.moveTo(bottomLeftX - 3, bottomLeftY);
+                ctx.lineTo(bottomLeftX + 3, bottomLeftY);
+                ctx.moveTo(bottomRightX - 3, bottomRightY);
+                ctx.lineTo(bottomRightX + 3, bottomRightY);
+                ctx.stroke();
+                
+                // Draw the three balls
+                ctx.fillStyle = '#ffffff';
+                
+                // Top ball
+                ctx.beginPath();
+                ctx.arc(topX, topY, ballRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Bottom left ball
+                ctx.beginPath();
+                ctx.arc(bottomLeftX, bottomLeftY, ballRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Bottom right ball
+                ctx.beginPath();
+                ctx.arc(bottomRightX, bottomRightY, ballRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Add small glow effect to balls
+                ctx.save();
+                ctx.globalAlpha = 0.3;
+                ctx.fillStyle = '#ffff00';
+                
+                ctx.beginPath();
+                ctx.arc(topX, topY, ballRadius + 1, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(bottomLeftX, bottomLeftY, ballRadius + 1, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(bottomRightX, bottomRightY, ballRadius + 1, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+                
             } else {
                 // Draw powerup background for other types
                 ctx.fillStyle = this.colors[this.type];

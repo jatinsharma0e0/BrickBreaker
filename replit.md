@@ -7,6 +7,7 @@ This project has been converted to a pure HTML5, CSS3, and JavaScript Brick Brea
 ## Recent Changes (Updated July 24, 2025)
 
 - **Migration Completed**: Successfully migrated from Replit Agent to standard Replit environment
+- **Multi-Ball Visual Update**: Enhanced Multi-Ball powerup design with three white balls in triangle formation on bright yellow background with motion blur lines
 - **Multi-ball Launch Fix**: Fixed issue where only one ball would launch when multi-ball powerup was collected while ball was attached to paddle
 - **Enhanced Visual Feedback**: Added red warning glow effect to large paddle powerup in the final 2 seconds before it expires
 - **Powerup Reset System**: Same powerup collected while active now resets timer to full duration
