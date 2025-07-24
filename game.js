@@ -822,7 +822,8 @@ class Powerup {
             laserPaddle: '#e74c3c',
             slowMotion: '#3498db',
             shield: '#95a5a6',
-            fireball: '#e67e22'
+            fireball: '#e67e22',
+            mysteryBox: '#ff69b4' // Hot pink for mystery box
         };
         this.symbols = {
             largePaddle: null, // Custom rectangle
@@ -832,7 +833,8 @@ class Powerup {
             laserPaddle: '🔫',
             slowMotion: '⏳',
             shield: '🛡️',
-            fireball: '🔥'
+            fireball: '🔥',
+            mysteryBox: '?'
         };
     }
     
@@ -868,6 +870,34 @@ class Powerup {
                 // Add inner highlight to show it's a paddle
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(this.position.x + 2, this.position.y + 2, this.width - 4, this.height - 4);
+            } else if (this.type === 'mysteryBox') {
+                // Draw animated mystery box with sparkle effects
+                ctx.fillStyle = this.colors[this.type];
+                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Add border
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Add animated glow effect
+                const glowIntensity = 0.5 + Math.sin(Date.now() * 0.008) * 0.3;
+                ctx.save();
+                ctx.globalAlpha = glowIntensity;
+                ctx.fillStyle = '#ffff00';
+                ctx.fillRect(this.position.x - 1, this.position.y - 1, this.width + 2, this.height + 2);
+                ctx.restore();
+                
+                // Draw question mark
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(
+                    this.symbols[this.type], 
+                    this.position.x + this.width / 2, 
+                    this.position.y + this.height / 2
+                );
             } else if (this.type === 'multiBall') {
                 // Draw custom multi-ball design: three balls in triangle formation (no background)
                 const centerX = this.position.x + this.width / 2;
@@ -1389,6 +1419,9 @@ class Game {
             case 'fireball':
                 this.activateFireball();
                 break;
+            case 'mysteryBox':
+                this.activateMysteryBox();
+                break;
         }
     }
     
@@ -1412,7 +1445,7 @@ class Game {
         
         // Chance to spawn powerup (only once per brick)
         if (Math.random() < 0.25) { // 25% chance
-            const powerupTypes = ['largePaddle', 'extraLife', 'multiBall', 'stickyPaddle', 'laserPaddle', 'slowMotion', 'shield', 'fireball'];
+            const powerupTypes = ['largePaddle', 'extraLife', 'multiBall', 'stickyPaddle', 'laserPaddle', 'slowMotion', 'shield', 'fireball', 'mysteryBox'];
             const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
             
             // Create powerup with proper centering
@@ -1518,6 +1551,25 @@ class Game {
             });
             this.fireballTimer = null;
         }, 8000);
+    }
+    
+    activateMysteryBox() {
+        // Create a list of possible powerup effects (excluding mysteryBox to prevent infinite loop)
+        const mysteryPowerups = ['largePaddle', 'extraLife', 'multiBall', 'stickyPaddle', 'laserPaddle', 'slowMotion', 'shield', 'fireball'];
+        
+        // Pick a random powerup effect
+        const randomEffect = mysteryPowerups[Math.floor(Math.random() * mysteryPowerups.length)];
+        
+        // Create visual effect to show what powerup was chosen
+        this.createParticleExplosion(
+            this.paddle.position.x + this.paddle.width / 2,
+            this.paddle.position.y - 20,
+            '#ff69b4', // Pink particles for mystery effect
+            12
+        );
+        
+        // Apply the random powerup effect
+        this.applyPowerup(randomEffect);
     }
     
     draw() {
