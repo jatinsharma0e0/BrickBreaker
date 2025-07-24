@@ -1022,9 +1022,9 @@ class Game {
     
     activateShield() {
         this.shield = new Shield(
-            this.width / 2 - 100,
-            this.height - 100,
-            200
+            0,
+            this.paddle.position.y + this.paddle.height + 10,
+            this.width
         );
     }
     
