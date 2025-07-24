@@ -9,6 +9,8 @@ This project has been converted to a pure HTML5, CSS3, and JavaScript Brick Brea
 - **Migration Completed**: Successfully migrated from Replit Agent to standard Replit environment
 - **Multi-ball Launch Fix**: Fixed issue where only one ball would launch when multi-ball powerup was collected while ball was attached to paddle
 - **Enhanced Visual Feedback**: Added red warning glow effect to large paddle powerup in the final 2 seconds before it expires
+- **Powerup Reset System**: Same powerup collected while active now resets timer to full duration
+- **Single Powerup Drop Fix**: Fixed bug where bricks could drop multiple powerups - now each brick drops exactly one powerup maximum
 - **Python 3.11 Installation**: Added Python 3.11 for HTTP server functionality
 
 ## User Preferences

@@ -616,7 +616,7 @@ class Game {
             
             // Check brick collisions
             for (const brick of this.bricks) {
-                if (brick.checkCollision(ball)) {
+                if (!brick.destroyed && !brick.isDestroying && brick.checkCollision(ball)) {
                     this.score += 10;
                     
                     // Create particle explosion
@@ -634,7 +634,7 @@ class Game {
                         10
                     ));
                     
-                    // Chance to spawn powerup
+                    // Chance to spawn powerup (only once per brick)
                     if (Math.random() < 0.25) { // 25% chance
                         const powerupTypes = ['largePaddle', 'extraLife', 'multiBall'];
                         const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
