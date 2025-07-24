@@ -807,7 +807,7 @@ class Powerup {
         this.position = new Vector2(x, y);
         this.type = type; // 'largePaddle', 'extraLife', 'multiBall'
         // Set width based on powerup type
-        if (type === 'largePaddle') {
+        if (type === 'largePaddle' || type === 'stickyPaddle') {
             this.width = 32;
             this.height = 16;
         } else {
@@ -830,7 +830,7 @@ class Powerup {
             largePaddle: null, // Custom rectangle
             extraLife: '❤️',
             multiBall: null, // Custom triangle ball formation
-            stickyPaddle: 'S',
+            stickyPaddle: null, // Custom rectangle (same as largePaddle)
             laserPaddle: '🔫',
             slowMotion: '⏳',
             shield: '🛡️',
@@ -847,6 +847,19 @@ class Powerup {
             if (this.type === 'largePaddle') {
                 // Draw wide green rectangle for larger paddle powerup
                 ctx.fillStyle = '#4ecdc4';
+                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Add border
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Add inner highlight to show it's a paddle
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(this.position.x + 2, this.position.y + 2, this.width - 4, this.height - 4);
+            } else if (this.type === 'stickyPaddle') {
+                // Draw wide purple rectangle for sticky paddle powerup
+                ctx.fillStyle = '#9b59b6';
                 ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
                 
                 // Add border
