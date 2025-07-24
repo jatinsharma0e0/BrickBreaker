@@ -203,6 +203,111 @@ class Shield {
     }
 }
 
+class LaserBarrel {
+    constructor(paddleX, paddleY, paddleWidth) {
+        this.position = new Vector2(paddleX + paddleWidth / 2, paddleY - 8);
+        this.width = 12;
+        this.height = 16;
+        this.color = '#e74c3c';
+        this.isDestroying = false;
+        this.destructionTimer = 0;
+        this.pieces = [];
+        this.paddleWidth = paddleWidth;
+        this.paddleX = paddleX;
+    }
+    
+    update(paddleX, paddleWidth) {
+        // Update position to stay centered on paddle
+        this.paddleX = paddleX;
+        this.paddleWidth = paddleWidth;
+        this.position.x = paddleX + paddleWidth / 2;
+        
+        if (this.isDestroying) {
+            this.destructionTimer += 0.02;
+            
+            // Update destruction pieces
+            for (let piece of this.pieces) {
+                piece.position.add(piece.velocity);
+                piece.velocity.y += 0.1; // Gravity
+                piece.rotation += piece.rotationSpeed;
+                piece.alpha = Math.max(0, 1 - this.destructionTimer * 2);
+            }
+        }
+    }
+    
+    startDestruction() {
+        this.isDestroying = true;
+        this.destructionTimer = 0;
+        
+        // Create destruction pieces
+        const numPieces = 8;
+        for (let i = 0; i < numPieces; i++) {
+            this.pieces.push({
+                position: new Vector2(
+                    this.position.x + (Math.random() - 0.5) * this.width,
+                    this.position.y + (Math.random() - 0.5) * this.height
+                ),
+                velocity: new Vector2(
+                    (Math.random() - 0.5) * 4,
+                    Math.random() * -3 - 1
+                ),
+                width: Math.random() * 4 + 2,
+                height: Math.random() * 4 + 2,
+                rotation: 0,
+                rotationSpeed: (Math.random() - 0.5) * 0.2,
+                alpha: 1,
+                color: this.color
+            });
+        }
+    }
+    
+    draw(ctx) {
+        if (this.isDestroying) {
+            // Draw destruction pieces
+            for (let piece of this.pieces) {
+                if (piece.alpha > 0) {
+                    ctx.save();
+                    ctx.globalAlpha = piece.alpha;
+                    ctx.translate(piece.position.x, piece.position.y);
+                    ctx.rotate(piece.rotation);
+                    ctx.fillStyle = piece.color;
+                    ctx.fillRect(-piece.width / 2, -piece.height / 2, piece.width, piece.height);
+                    ctx.restore();
+                }
+            }
+        } else {
+            // Draw intact barrel
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.position.x - this.width / 2, this.position.y, this.width, this.height);
+            
+            // Add barrel details
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(this.position.x - this.width / 2, this.position.y, this.width, this.height);
+            
+            // Add barrel tip
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(this.position.x - 2, this.position.y - 3, 4, 3);
+            
+            // Add side details
+            ctx.strokeStyle = '#a93226';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(this.position.x - this.width / 2 + 2, this.position.y + 4);
+            ctx.lineTo(this.position.x + this.width / 2 - 2, this.position.y + 4);
+            ctx.moveTo(this.position.x - this.width / 2 + 2, this.position.y + 8);
+            ctx.lineTo(this.position.x + this.width / 2 - 2, this.position.y + 8);
+            ctx.moveTo(this.position.x - this.width / 2 + 2, this.position.y + 12);
+            ctx.lineTo(this.position.x + this.width / 2 - 2, this.position.y + 12);
+            ctx.stroke();
+        }
+    }
+    
+    isDestructionComplete() {
+        return this.isDestroying && this.destructionTimer > 1;
+    }
+}
+
 class Ball {
     constructor(x, y, radius = 8) {
         this.position = new Vector2(x, y);
@@ -371,6 +476,7 @@ class Paddle {
         this.isSticky = false;
         this.hasLaser = false;
         this.powerupTimers = [];
+        this.barrel = null;
     }
     
     update(keys, canvasWidth) {
@@ -379,6 +485,16 @@ class Paddle {
         }
         if (keys.ArrowRight && this.position.x + this.width < canvasWidth) {
             this.position.x += this.speed;
+        }
+        
+        // Update barrel position if it exists
+        if (this.barrel) {
+            this.barrel.update(this.position.x, this.width);
+            
+            // Remove barrel if destruction is complete
+            if (this.barrel.isDestructionComplete()) {
+                this.barrel = null;
+            }
         }
     }
     
@@ -415,6 +531,11 @@ class Paddle {
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1;
         ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+        
+        // Draw laser barrel if active
+        if (this.barrel) {
+            this.barrel.draw(ctx);
+        }
     }
     
     enlargePaddle() {
@@ -904,6 +1025,7 @@ class Game {
         this.paddle.clearEnlargeTimers();
         this.paddle.isSticky = false;
         this.paddle.hasLaser = false;
+        this.paddle.barrel = null;
         
         // Clear other powerup effects
         this.lasers = [];
@@ -1015,8 +1137,21 @@ class Game {
     
     activateLaserPaddle() {
         this.paddle.hasLaser = true;
+        
+        // Create barrel on paddle
+        this.paddle.barrel = new LaserBarrel(
+            this.paddle.position.x,
+            this.paddle.position.y,
+            this.paddle.width
+        );
+        
         setTimeout(() => {
             this.paddle.hasLaser = false;
+            
+            // Start barrel destruction animation
+            if (this.paddle.barrel && !this.paddle.barrel.isDestroying) {
+                this.paddle.barrel.startDestruction();
+            }
         }, 10000);
     }
     
