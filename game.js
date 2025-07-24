@@ -806,8 +806,14 @@ class Powerup {
     constructor(x, y, type) {
         this.position = new Vector2(x, y);
         this.type = type; // 'largePaddle', 'extraLife', 'multiBall'
-        this.width = 20;
-        this.height = 20;
+        // Set width based on powerup type
+        if (type === 'largePaddle') {
+            this.width = 32;
+            this.height = 16;
+        } else {
+            this.width = 20;
+            this.height = 20;
+        }
         this.velocity = new Vector2(0, 2);
         this.collected = false;
         this.colors = {
@@ -839,12 +845,18 @@ class Powerup {
     draw(ctx) {
         if (!this.collected) {
             if (this.type === 'largePaddle') {
-                // Draw wide green rectangle for larger paddle
-                ctx.fillStyle = '#00ff88';
-                ctx.fillRect(this.position.x + 2, this.position.y + 6, this.width - 4, this.height - 12);
-                ctx.strokeStyle = '#00cc66';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(this.position.x + 2, this.position.y + 6, this.width - 4, this.height - 12);
+                // Draw wide green rectangle for larger paddle powerup
+                ctx.fillStyle = '#4ecdc4';
+                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Add border
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Add inner highlight to show it's a paddle
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(this.position.x + 2, this.position.y + 2, this.width - 4, this.height - 4);
             } else if (this.type === 'multiBall') {
                 // Draw custom multi-ball design: three balls in triangle formation (no background)
                 const centerX = this.position.x + this.width / 2;
@@ -1391,11 +1403,16 @@ class Game {
         if (Math.random() < 0.25) { // 25% chance
             const powerupTypes = ['largePaddle', 'extraLife', 'multiBall', 'stickyPaddle', 'laserPaddle', 'slowMotion', 'shield', 'fireball'];
             const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
-            this.powerups.push(new Powerup(
-                brick.position.x + brick.width / 2 - 10,
-                brick.position.y + brick.height,
-                randomType
-            ));
+            
+            // Create powerup with proper centering
+            const powerup = new Powerup(0, 0, randomType); // Temporary position
+            const powerupX = brick.position.x + brick.width / 2 - powerup.width / 2;
+            const powerupY = brick.position.y + brick.height;
+            
+            powerup.position.x = powerupX;
+            powerup.position.y = powerupY;
+            
+            this.powerups.push(powerup);
         }
     }
     
