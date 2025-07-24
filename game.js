@@ -1023,6 +1023,8 @@ class Game {
         this.shield = null;
         this.slowMotionActive = false;
         this.slowMotionTimer = null;
+        this.laserTimer = null;
+        this.fireballTimer = null;
         
         this.init();
         this.setupEventListeners();
@@ -1268,7 +1270,17 @@ class Game {
             this.slowMotionTimer = null;
         }
         
-        // Reset balls to normal
+        // Clear laser timer
+        if (this.laserTimer) {
+            clearTimeout(this.laserTimer);
+            this.laserTimer = null;
+        }
+        
+        // Clear fireball timer and reset balls to normal
+        if (this.fireballTimer) {
+            clearTimeout(this.fireballTimer);
+            this.fireballTimer = null;
+        }
         this.balls.forEach(ball => {
             ball.isFireball = false;
             ball.color = '#fff';
@@ -1401,6 +1413,11 @@ class Game {
     }
     
     activateLaserPaddle() {
+        // Clear existing laser timer if active
+        if (this.laserTimer) {
+            clearTimeout(this.laserTimer);
+        }
+        
         this.paddle.hasLaser = true;
         
         // Create barrel on paddle
@@ -1410,13 +1427,14 @@ class Game {
             this.paddle.width
         );
         
-        setTimeout(() => {
+        this.laserTimer = setTimeout(() => {
             this.paddle.hasLaser = false;
             
             // Start barrel destruction animation
             if (this.paddle.barrel && !this.paddle.barrel.isDestroying) {
                 this.paddle.barrel.startDestruction();
             }
+            this.laserTimer = null;
         }, 10000);
     }
     
@@ -1446,6 +1464,7 @@ class Game {
     }
     
     activateShield() {
+        // Reset shield to full health if already exists
         this.shield = new Shield(
             0,
             this.paddle.position.y + this.paddle.height + 10,
@@ -1454,16 +1473,22 @@ class Game {
     }
     
     activateFireball() {
+        // Clear existing fireball timer if active
+        if (this.fireballTimer) {
+            clearTimeout(this.fireballTimer);
+        }
+        
         this.balls.forEach(ball => {
             ball.isFireball = true;
             ball.color = '#ff4500';
         });
         
-        setTimeout(() => {
+        this.fireballTimer = setTimeout(() => {
             this.balls.forEach(ball => {
                 ball.isFireball = false;
                 ball.color = '#fff';
             });
+            this.fireballTimer = null;
         }, 8000);
     }
     
