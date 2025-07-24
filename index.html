@@ -9,18 +9,32 @@
 <body>
     <div class="game-container">
         <h1>Brick Breaker</h1>
-        <div class="game-info">
-            <div>Score: <span id="score">0</span></div>
-            <div>Lives: <span id="lives">3</span></div>
+        <div class="game-layout">
+            <div class="game-area">
+                <canvas id="gameCanvas" width="700" height="500"></canvas>
+            </div>
+            <div class="info-panel">
+                <div class="score-lives">
+                    <div class="score">Score: <span id="score">0</span></div>
+                    <div class="lives">Lives: <span id="lives">3</span></div>
+                </div>
+                
+                <div class="controls-section">
+                    <h3>Controls</h3>
+                    <p>Use ← → arrow keys to move paddle</p>
+                </div>
+                
+                <div class="powerups-section">
+                    <h3>Powerups</h3>
+                    <div class="powerup-item">🟦 Larger Paddle</div>
+                    <div class="powerup-item">🟥 Extra Life</div>
+                    <div class="powerup-item">🟨 Multi-Ball</div>
+                </div>
+                
+                <button class="restart-btn" onclick="game.restart()">Restart Game</button>
+            </div>
         </div>
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div class="controls">
-            Use ← → arrow keys to move paddle
-        </div>
-        <div class="powerup-info">
-            Powerups: 🟦 Larger Paddle | 🟥 Extra Life | 🟨 Multi-Ball
-        </div>
-        <button class="restart-btn" onclick="game.restart()">Restart Game</button>
+        
         
         <div id="gameOver" class="game-over" style="display: none;">
             <h2>Game Over!</h2>

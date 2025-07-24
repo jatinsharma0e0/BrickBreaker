@@ -4,10 +4,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     font-family: 'Arial', sans-serif;
     color: white;
+    overflow: hidden;
 }
 
 .game-container {
@@ -16,6 +17,23 @@ body {
     padding: 20px;
     border-radius: 15px;
     backdrop-filter: blur(10px);
+    max-height: 95vh;
+    overflow: hidden;
+}
+
+.game-container h1 {
+    margin: 0 0 20px 0;
+    font-size: 28px;
+}
+
+.game-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.game-area {
+    flex: 0 0 auto;
 }
 
 canvas {
@@ -23,33 +41,61 @@ canvas {
     border-radius: 10px;
     background: #000;
     display: block;
-    margin: 0 auto;
 }
 
-.game-info {
+.info-panel {
+    flex: 0 0 200px;
+    text-align: left;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    height: 500px;
     display: flex;
-    justify-content: space-between;
-    margin: 10px 0;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.score-lives {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     font-size: 18px;
     font-weight: bold;
+    text-align: center;
 }
 
-.controls {
-    margin: 10px 0;
+.controls-section h3,
+.powerups-section h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 5px;
+}
+
+.controls-section p {
+    margin: 0;
     font-size: 14px;
-    opacity: 0.8;
+    opacity: 0.9;
+}
+
+.powerup-item {
+    margin: 5px 0;
+    font-size: 14px;
+    opacity: 0.9;
 }
 
 .restart-btn {
     background: #4CAF50;
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 20px;
     font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
-    margin: 10px;
     transition: background 0.3s;
+    width: 100%;
+    margin-top: auto;
 }
 
 .restart-btn:hover {
@@ -57,7 +103,7 @@ canvas {
 }
 
 .game-over, .game-win {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -68,10 +114,5 @@ canvas {
     text-align: center;
     font-size: 24px;
     z-index: 10;
-}
-
-.powerup-info {
-    font-size: 12px;
-    margin: 5px 0;
-    opacity: 0.7;
+    border: 2px solid #fff;
 }

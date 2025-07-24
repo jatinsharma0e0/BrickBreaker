@@ -289,12 +289,12 @@ class Game {
     createBricks() {
         this.bricks = [];
         const rows = 5;
-        const cols = 10;
-        const brickWidth = 75;
+        const cols = 9;
+        const brickWidth = 70;
         const brickHeight = 20;
         const padding = 5;
         const offsetX = (this.width - (cols * (brickWidth + padding) - padding)) / 2;
-        const offsetY = 50;
+        const offsetY = 40;
         
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
