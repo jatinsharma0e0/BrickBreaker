@@ -821,14 +821,14 @@ class Powerup {
             fireball: '#e67e22'
         };
         this.symbols = {
-            largePaddle: 'W',
-            extraLife: '+',
+            largePaddle: null, // Custom rectangle
+            extraLife: '❤️',
             multiBall: 'M',
             stickyPaddle: 'S',
-            laserPaddle: 'L',
-            slowMotion: 'T',
-            shield: 'H',
-            fireball: 'F'
+            laserPaddle: '🔫',
+            slowMotion: '⏳',
+            shield: '🛡️',
+            fireball: '🔥'
         };
     }
     
@@ -838,18 +838,56 @@ class Powerup {
     
     draw(ctx) {
         if (!this.collected) {
-            ctx.fillStyle = this.colors[this.type];
-            ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-            
-            ctx.fillStyle = '#000';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(
-                this.symbols[this.type], 
-                this.position.x + this.width / 2, 
-                this.position.y + this.height / 2 + 4
-            );
+            if (this.type === 'largePaddle') {
+                // Draw wide green rectangle for larger paddle
+                ctx.fillStyle = '#00ff88';
+                ctx.fillRect(this.position.x + 2, this.position.y + 6, this.width - 4, this.height - 12);
+                ctx.strokeStyle = '#00cc66';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.position.x + 2, this.position.y + 6, this.width - 4, this.height - 12);
+            } else {
+                // Draw powerup background for other types
+                ctx.fillStyle = this.colors[this.type];
+                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Add border
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Draw symbol (emoji or letter)
+                if (this.symbols[this.type]) {
+                    ctx.fillStyle = '#fff';
+                    if (this.isEmoji(this.symbols[this.type])) {
+                        // Draw emoji
+                        ctx.font = '14px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(
+                            this.symbols[this.type], 
+                            this.position.x + this.width / 2, 
+                            this.position.y + this.height / 2
+                        );
+                    } else {
+                        // Draw letter
+                        ctx.font = 'bold 12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(
+                            this.symbols[this.type], 
+                            this.position.x + this.width / 2, 
+                            this.position.y + this.height / 2
+                        );
+                    }
+                }
+            }
         }
+    }
+    
+    isEmoji(str) {
+        // Simple emoji detection for the specific emojis we're using
+        const emojiList = ['❤️', '🔫', '⏳', '🛡️', '🔥'];
+        return emojiList.includes(str);
     }
     
     checkPaddleCollision(paddle) {
