@@ -1284,43 +1284,29 @@ class Game {
                 this.lives++;
                 break;
             case 'multiBall':
-                if (this.balls.length === 1) {
-                    const originalBall = this.balls[0];
-                    
-                    // Create first additional ball
-                    const newBall1 = new Ball(
-                        originalBall.position.x - 20,
-                        originalBall.position.y,
-                        originalBall.radius
+                // Always spawn 3 balls total, regardless of current ball count
+                // Clear existing balls and create 3 new ones from paddle position
+                const paddleCenterX = this.paddle.position.x + this.paddle.width / 2;
+                const paddleTopY = this.paddle.position.y - 10;
+                
+                // Clear all existing balls
+                this.balls = [];
+                
+                // Create 3 new balls positioned on the paddle
+                for (let i = 0; i < 3; i++) {
+                    const offsetX = (i - 1) * 15; // Spread balls: -15, 0, +15
+                    const newBall = new Ball(
+                        paddleCenterX + offsetX,
+                        paddleTopY,
+                        8
                     );
-                    // If original ball is attached, new ball should also be attached
-                    if (originalBall.attachedToPaddle) {
-                        newBall1.attachedToPaddle = true;
-                        newBall1.launched = false;
-                    } else {
-                        newBall1.attachedToPaddle = false;
-                        newBall1.launched = true;
-                        newBall1.velocity = new Vector2(-3, -3);
-                    }
-                    this.balls.push(newBall1);
-                    
-                    // Create second additional ball
-                    const newBall2 = new Ball(
-                        originalBall.position.x + 20,
-                        originalBall.position.y,
-                        originalBall.radius
-                    );
-                    // If original ball is attached, new ball should also be attached
-                    if (originalBall.attachedToPaddle) {
-                        newBall2.attachedToPaddle = true;
-                        newBall2.launched = false;
-                    } else {
-                        newBall2.attachedToPaddle = false;
-                        newBall2.launched = true;
-                        newBall2.velocity = new Vector2(3, -3);
-                    }
-                    this.balls.push(newBall2);
+                    newBall.attachedToPaddle = true;
+                    newBall.launched = false;
+                    this.balls.push(newBall);
                 }
+                
+                // Reset ball launch state so all 3 can be launched together
+                this.ballLaunched = false;
                 break;
             case 'stickyPaddle':
                 this.activateStickyPaddle();
