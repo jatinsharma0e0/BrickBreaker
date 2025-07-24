@@ -477,6 +477,11 @@ class Paddle {
         this.hasLaser = false;
         this.powerupTimers = [];
         this.barrel = null;
+        this.stickyGlowIntensity = 0;
+        this.stickyTimers = {
+            glowInterval: null,
+            endTimeout: null
+        };
     }
     
     update(keys, canvasWidth) {
@@ -515,6 +520,14 @@ class Paddle {
             ctx.fillRect(this.position.x - 3, this.position.y - 3, this.width + 6, this.height + 6);
             ctx.restore();
         }
+        // Draw sticky glow effect (purple) when sticky is active
+        else if (this.isSticky && this.stickyGlowIntensity > 0) {
+            ctx.save();
+            ctx.globalAlpha = this.stickyGlowIntensity * 0.6;
+            ctx.fillStyle = '#9b59b6';
+            ctx.fillRect(this.position.x - 3, this.position.y - 3, this.width + 6, this.height + 6);
+            ctx.restore();
+        }
         
         // Draw main paddle
         let paddleColor = this.color;
@@ -522,6 +535,8 @@ class Paddle {
             paddleColor = '#ff4444';
         } else if (this.isEnlarged) {
             paddleColor = '#00ff88';
+        } else if (this.isSticky) {
+            paddleColor = '#9b59b6';
         }
         
         ctx.fillStyle = paddleColor;
@@ -595,6 +610,37 @@ class Paddle {
             clearTimeout(this.enlargeTimers.endTimeout);
             this.enlargeTimers.endTimeout = null;
         }
+    }
+    
+    clearStickyTimers() {
+        if (this.stickyTimers.glowInterval) {
+            clearInterval(this.stickyTimers.glowInterval);
+            this.stickyTimers.glowInterval = null;
+        }
+        if (this.stickyTimers.endTimeout) {
+            clearTimeout(this.stickyTimers.endTimeout);
+            this.stickyTimers.endTimeout = null;
+        }
+    }
+    
+    activateSticky() {
+        // Clear any existing sticky timers
+        this.clearStickyTimers();
+        
+        this.isSticky = true;
+        this.stickyGlowIntensity = 1.0;
+        
+        // Animate purple glow
+        this.stickyTimers.glowInterval = setInterval(() => {
+            this.stickyGlowIntensity = 0.5 + Math.sin(Date.now() * 0.008) * 0.5;
+        }, 50);
+        
+        // End sticky effect after 10 seconds
+        this.stickyTimers.endTimeout = setTimeout(() => {
+            this.isSticky = false;
+            this.stickyGlowIntensity = 0;
+            this.clearStickyTimers();
+        }, 10000);
     }
 }
 
@@ -1023,6 +1069,7 @@ class Game {
         
         // Clear any active powerup timers
         this.paddle.clearEnlargeTimers();
+        this.paddle.clearStickyTimers();
         this.paddle.isSticky = false;
         this.paddle.hasLaser = false;
         this.paddle.barrel = null;
@@ -1129,10 +1176,7 @@ class Game {
     }
     
     activateStickyPaddle() {
-        this.paddle.isSticky = true;
-        setTimeout(() => {
-            this.paddle.isSticky = false;
-        }, 10000);
+        this.paddle.activateSticky();
     }
     
     activateLaserPaddle() {
