@@ -11,6 +11,8 @@ This project has been converted to a pure HTML5, CSS3, and JavaScript Brick Brea
 - **Enhanced Visual Feedback**: Added red warning glow effect to large paddle powerup in the final 2 seconds before it expires
 - **Powerup Reset System**: Same powerup collected while active now resets timer to full duration
 - **Single Powerup Drop Fix**: Fixed bug where bricks could drop multiple powerups - now each brick drops exactly one powerup maximum
+- **5 New Powerups Added**: Sticky Paddle, Laser Paddle, Slow Motion, Shield, and Fireball with unique mechanics
+- **Advanced Game Mechanics**: Added laser shooting with spacebar, shield barrier system, ball attachment mechanics
 - **Python 3.11 Installation**: Added Python 3.11 for HTTP server functionality
 
 ## User Preferences
@@ -49,19 +51,24 @@ Preferred communication style: Simple, everyday language.
 
 ### Game Entities (Classes)
 - **Vector2**: 2D vector mathematics for position and velocity
-- **Ball**: Ball physics, collision detection, and rendering
-- **Paddle**: Player-controlled paddle with movement and powerup effects
-- **Brick**: Destructible brick entities with random colors
-- **Powerup**: Falling powerup items (larger paddle, extra life, multi-ball)
-- **Game**: Main controller managing all entities and game loop
+- **Ball**: Ball physics, collision detection, rendering, and special modes (fireball, sticky)
+- **Paddle**: Player-controlled paddle with movement, powerup effects, and special abilities
+- **Brick**: Destructible brick entities with random colors and destruction animations
+- **Powerup**: Falling powerup items with 8 different types and visual effects
+- **Laser**: Projectile system for laser paddle powerup with collision detection
+- **Shield**: Protective barrier with damage system and visual degradation
+- **Particle**: Visual effect system for explosions and animations
+- **ScorePopup**: Floating score indicators with fade animations
+- **Game**: Main controller managing all entities, powerups, and game loop
 
 ### Game Features
-- **Powerup System**: 25% chance for bricks to drop powerups when destroyed
+- **Expanded Powerup System**: 8 different powerups with 25% chance per destroyed brick
 - **Scoring System**: 10 points per brick, score and lives tracking
 - **Win/Lose Conditions**: Clear all bricks to win, lose all lives for game over
-- **Visual Polish**: Colorful bricks, smooth animations, game over/win screens
-- **Enhanced Powerup Feedback**: Large paddle powerup includes green glow effect with red warning glow in final 2 seconds
+- **Visual Polish**: Colorful bricks, smooth animations, game over/win screens, particle effects
+- **Enhanced Powerup Feedback**: Large paddle includes green glow with red warning in final 2 seconds
 - **Multi-ball Launch Fix**: All attached balls launch simultaneously when pressing up arrow
+- **Advanced Combat**: Laser shooting, shield protection, fireball mode, and sticky paddle mechanics
 
 ## Data Flow
 

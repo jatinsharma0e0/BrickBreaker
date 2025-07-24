@@ -98,6 +98,111 @@ class ScorePopup {
     }
 }
 
+class Laser {
+    constructor(x, y) {
+        this.position = new Vector2(x, y);
+        this.velocity = new Vector2(0, -8);
+        this.width = 3;
+        this.height = 15;
+        this.color = '#ff0000';
+        this.active = true;
+    }
+    
+    update() {
+        this.position.add(this.velocity);
+    }
+    
+    draw(ctx) {
+        if (this.active) {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.position.x - this.width/2, this.position.y, this.width, this.height);
+            
+            // Add glow effect
+            ctx.save();
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = '#ff4444';
+            ctx.fillRect(this.position.x - this.width, this.position.y, this.width * 2, this.height);
+            ctx.restore();
+        }
+    }
+    
+    checkBrickCollision(brick) {
+        if (!this.active || brick.destroyed || brick.isDestroying) return false;
+        
+        if (this.position.x >= brick.position.x && 
+            this.position.x <= brick.position.x + brick.width &&
+            this.position.y <= brick.position.y + brick.height && 
+            this.position.y + this.height >= brick.position.y) {
+            
+            this.active = false;
+            brick.startDestruction();
+            return true;
+        }
+        return false;
+    }
+    
+    isOffScreen() {
+        return this.position.y + this.height < 0;
+    }
+}
+
+class Shield {
+    constructor(x, y, width = 200) {
+        this.position = new Vector2(x, y);
+        this.width = width;
+        this.height = 8;
+        this.color = '#95a5a6';
+        this.active = true;
+        this.hits = 0;
+        this.maxHits = 5;
+        this.alpha = 1.0;
+    }
+    
+    update() {
+        // Shield becomes more transparent as it takes damage
+        this.alpha = (this.maxHits - this.hits) / this.maxHits;
+        if (this.hits >= this.maxHits) {
+            this.active = false;
+        }
+    }
+    
+    draw(ctx) {
+        if (this.active) {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+            
+            // Add energy effect
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+            ctx.restore();
+        }
+    }
+    
+    checkBallCollision(ball) {
+        if (!this.active) return false;
+        
+        const ballLeft = ball.position.x - ball.radius;
+        const ballRight = ball.position.x + ball.radius;
+        const ballTop = ball.position.y - ball.radius;
+        const ballBottom = ball.position.y + ball.radius;
+        
+        if (ballRight >= this.position.x && 
+            ballLeft <= this.position.x + this.width &&
+            ballBottom >= this.position.y && 
+            ballTop <= this.position.y + this.height) {
+            
+            ball.velocity.y = -Math.abs(ball.velocity.y);
+            ball.position.y = this.position.y - ball.radius;
+            this.hits++;
+            return true;
+        }
+        return false;
+    }
+}
+
 class Ball {
     constructor(x, y, radius = 8) {
         this.position = new Vector2(x, y);
@@ -108,6 +213,8 @@ class Ball {
         this.launched = false;
         this.trail = []; // For ball trail effect
         this.maxTrailLength = 8;
+        this.isFireball = false;
+        this.originalSpeed = 4;
     }
     
     update(paddle = null) {
@@ -240,6 +347,9 @@ class Paddle {
             warningInterval: null,
             endTimeout: null
         };
+        this.isSticky = false;
+        this.hasLaser = false;
+        this.powerupTimers = [];
     }
     
     update(keys, canvasWidth) {
@@ -456,12 +566,22 @@ class Powerup {
         this.colors = {
             largePaddle: '#4ecdc4',
             extraLife: '#ff6b6b',
-            multiBall: '#feca57'
+            multiBall: '#feca57',
+            stickyPaddle: '#9b59b6',
+            laserPaddle: '#e74c3c',
+            slowMotion: '#3498db',
+            shield: '#95a5a6',
+            fireball: '#e67e22'
         };
         this.symbols = {
             largePaddle: 'W',
             extraLife: '+',
-            multiBall: 'M'
+            multiBall: 'M',
+            stickyPaddle: 'S',
+            laserPaddle: 'L',
+            slowMotion: 'T',
+            shield: 'H',
+            fireball: 'F'
         };
     }
     
@@ -522,6 +642,10 @@ class Game {
         this.particles = [];
         this.scorePopups = [];
         this.ballLaunched = false;
+        this.lasers = [];
+        this.shield = null;
+        this.slowMotionActive = false;
+        this.slowMotionTimer = null;
         
         this.init();
         this.setupEventListeners();
@@ -543,6 +667,8 @@ class Game {
         this.powerups = [];
         this.particles = [];
         this.scorePopups = [];
+        this.lasers = [];
+        this.shield = null;
         
         // Update UI
         this.updateUI();
@@ -594,6 +720,11 @@ class Game {
             }
         }
         
+        // Handle laser shooting
+        if (this.keys['Space'] && this.paddle.hasLaser) {
+            this.fireLaser();
+        }
+        
         // Update paddle
         this.paddle.update(this.keys, this.width);
         
@@ -612,40 +743,57 @@ class Game {
             }
             
             // Check paddle collision
-            ball.checkPaddleCollision(this.paddle);
+            if (ball.checkPaddleCollision(this.paddle)) {
+                // Sticky paddle effect
+                if (this.paddle.isSticky && !ball.attachedToPaddle) {
+                    ball.attachedToPaddle = true;
+                    ball.launched = false;
+                    this.ballLaunched = false;
+                }
+            }
+            
+            // Check shield collision
+            if (this.shield && this.shield.active) {
+                this.shield.checkBallCollision(ball);
+            }
             
             // Check brick collisions
             for (const brick of this.bricks) {
                 if (!brick.destroyed && !brick.isDestroying && brick.checkCollision(ball)) {
-                    this.score += 10;
+                    this.handleBrickDestruction(brick, ball.isFireball);
                     
-                    // Create particle explosion
-                    this.createParticleExplosion(
-                        brick.position.x + brick.width / 2,
-                        brick.position.y + brick.height / 2,
-                        brick.color,
-                        8
-                    );
-                    
-                    // Create score popup
-                    this.scorePopups.push(new ScorePopup(
-                        brick.position.x + brick.width / 2,
-                        brick.position.y + brick.height / 2,
-                        10
-                    ));
-                    
-                    // Chance to spawn powerup (only once per brick)
-                    if (Math.random() < 0.25) { // 25% chance
-                        const powerupTypes = ['largePaddle', 'extraLife', 'multiBall'];
-                        const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
-                        this.powerups.push(new Powerup(
-                            brick.position.x + brick.width / 2 - 10,
-                            brick.position.y + brick.height,
-                            randomType
-                        ));
+                    // Fireball continues through bricks
+                    if (!ball.isFireball) {
+                        break;
                     }
+                }
+            }
+        }
+        
+        // Update lasers
+        for (let i = this.lasers.length - 1; i >= 0; i--) {
+            const laser = this.lasers[i];
+            laser.update();
+            
+            // Check laser-brick collisions
+            for (const brick of this.bricks) {
+                if (laser.checkBrickCollision(brick)) {
+                    this.handleBrickDestruction(brick, false);
                     break;
                 }
+            }
+            
+            // Remove inactive or off-screen lasers
+            if (!laser.active || laser.isOffScreen()) {
+                this.lasers.splice(i, 1);
+            }
+        }
+        
+        // Update shield
+        if (this.shield) {
+            this.shield.update();
+            if (!this.shield.active) {
+                this.shield = null;
             }
         }
         
@@ -729,6 +877,23 @@ class Game {
         
         // Clear any active powerup timers
         this.paddle.clearEnlargeTimers();
+        this.paddle.isSticky = false;
+        this.paddle.hasLaser = false;
+        
+        // Clear other powerup effects
+        this.lasers = [];
+        this.shield = null;
+        this.slowMotionActive = false;
+        if (this.slowMotionTimer) {
+            clearTimeout(this.slowMotionTimer);
+            this.slowMotionTimer = null;
+        }
+        
+        // Reset balls to normal
+        this.balls.forEach(ball => {
+            ball.isFireball = false;
+            ball.color = '#fff';
+        });
     }
     
     applyPowerup(type) {
@@ -759,7 +924,122 @@ class Game {
                     this.balls.push(newBall);
                 }
                 break;
+            case 'stickyPaddle':
+                this.activateStickyPaddle();
+                break;
+            case 'laserPaddle':
+                this.activateLaserPaddle();
+                break;
+            case 'slowMotion':
+                this.activateSlowMotion();
+                break;
+            case 'shield':
+                this.activateShield();
+                break;
+            case 'fireball':
+                this.activateFireball();
+                break;
         }
+    }
+    
+    handleBrickDestruction(brick, isFireball) {
+        this.score += 10;
+        
+        // Create particle explosion
+        this.createParticleExplosion(
+            brick.position.x + brick.width / 2,
+            brick.position.y + brick.height / 2,
+            brick.color,
+            8
+        );
+        
+        // Create score popup
+        this.scorePopups.push(new ScorePopup(
+            brick.position.x + brick.width / 2,
+            brick.position.y + brick.height / 2,
+            10
+        ));
+        
+        // Chance to spawn powerup (only once per brick)
+        if (Math.random() < 0.25) { // 25% chance
+            const powerupTypes = ['largePaddle', 'extraLife', 'multiBall', 'stickyPaddle', 'laserPaddle', 'slowMotion', 'shield', 'fireball'];
+            const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+            this.powerups.push(new Powerup(
+                brick.position.x + brick.width / 2 - 10,
+                brick.position.y + brick.height,
+                randomType
+            ));
+        }
+    }
+    
+    fireLaser() {
+        if (this.lasers.length < 3) { // Limit laser count
+            this.lasers.push(new Laser(
+                this.paddle.position.x + this.paddle.width / 2,
+                this.paddle.position.y
+            ));
+        }
+    }
+    
+    activateStickyPaddle() {
+        this.paddle.isSticky = true;
+        setTimeout(() => {
+            this.paddle.isSticky = false;
+        }, 10000);
+    }
+    
+    activateLaserPaddle() {
+        this.paddle.hasLaser = true;
+        setTimeout(() => {
+            this.paddle.hasLaser = false;
+        }, 10000);
+    }
+    
+    activateSlowMotion() {
+        if (this.slowMotionTimer) {
+            clearTimeout(this.slowMotionTimer);
+        }
+        
+        this.slowMotionActive = true;
+        
+        // Slow down all balls
+        this.balls.forEach(ball => {
+            if (!ball.attachedToPaddle) {
+                ball.velocity.multiply(0.5);
+            }
+        });
+        
+        this.slowMotionTimer = setTimeout(() => {
+            this.slowMotionActive = false;
+            // Speed up all balls back to normal
+            this.balls.forEach(ball => {
+                if (!ball.attachedToPaddle) {
+                    ball.velocity.multiply(2);
+                }
+            });
+        }, 8000);
+    }
+    
+    activateShield() {
+        this.shield = new Shield(
+            this.width / 2 - 100,
+            this.height - 100,
+            200
+        );
+    }
+    
+    activateFireball() {
+        this.balls.forEach(ball => {
+            ball.isFireball = true;
+            ball.color = '#ff4500';
+        });
+        
+        setTimeout(() => {
+            this.balls.forEach(ball => {
+                ball.isFireball = false;
+                ball.color = '#fff';
+            });
+        }, 8000);
     }
     
     draw() {
@@ -773,6 +1053,14 @@ class Game {
         this.balls.forEach(ball => ball.draw(this.ctx));
         this.bricks.forEach(brick => brick.draw(this.ctx));
         this.powerups.forEach(powerup => powerup.draw(this.ctx));
+        
+        // Draw lasers
+        this.lasers.forEach(laser => laser.draw(this.ctx));
+        
+        // Draw shield
+        if (this.shield) {
+            this.shield.draw(this.ctx);
+        }
         
         // Draw particles
         this.particles.forEach(particle => particle.draw(this.ctx));
