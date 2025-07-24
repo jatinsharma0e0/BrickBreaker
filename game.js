@@ -1286,21 +1286,40 @@ class Game {
             case 'multiBall':
                 if (this.balls.length === 1) {
                     const originalBall = this.balls[0];
-                    const newBall = new Ball(
+                    
+                    // Create first additional ball
+                    const newBall1 = new Ball(
                         originalBall.position.x - 20,
                         originalBall.position.y,
                         originalBall.radius
                     );
                     // If original ball is attached, new ball should also be attached
                     if (originalBall.attachedToPaddle) {
-                        newBall.attachedToPaddle = true;
-                        newBall.launched = false;
+                        newBall1.attachedToPaddle = true;
+                        newBall1.launched = false;
                     } else {
-                        newBall.attachedToPaddle = false;
-                        newBall.launched = true;
-                        newBall.velocity = new Vector2(-3, -3);
+                        newBall1.attachedToPaddle = false;
+                        newBall1.launched = true;
+                        newBall1.velocity = new Vector2(-3, -3);
                     }
-                    this.balls.push(newBall);
+                    this.balls.push(newBall1);
+                    
+                    // Create second additional ball
+                    const newBall2 = new Ball(
+                        originalBall.position.x + 20,
+                        originalBall.position.y,
+                        originalBall.radius
+                    );
+                    // If original ball is attached, new ball should also be attached
+                    if (originalBall.attachedToPaddle) {
+                        newBall2.attachedToPaddle = true;
+                        newBall2.launched = false;
+                    } else {
+                        newBall2.attachedToPaddle = false;
+                        newBall2.launched = true;
+                        newBall2.velocity = new Vector2(3, -3);
+                    }
+                    this.balls.push(newBall2);
                 }
                 break;
             case 'stickyPaddle':
