@@ -1284,29 +1284,60 @@ class Game {
                 this.lives++;
                 break;
             case 'multiBall':
-                // Always spawn 3 balls total, regardless of current ball count
-                // Clear existing balls and create 3 new ones from paddle position
-                const paddleCenterX = this.paddle.position.x + this.paddle.width / 2;
-                const paddleTopY = this.paddle.position.y - 10;
+                // Check if any balls are currently attached to paddle
+                const hasAttachedBalls = this.balls.some(ball => ball.attachedToPaddle);
                 
-                // Clear all existing balls
-                this.balls = [];
-                
-                // Create 3 new balls positioned on the paddle
-                for (let i = 0; i < 3; i++) {
-                    const offsetX = (i - 1) * 15; // Spread balls: -15, 0, +15
-                    const newBall = new Ball(
-                        paddleCenterX + offsetX,
-                        paddleTopY,
-                        8
-                    );
-                    newBall.attachedToPaddle = true;
-                    newBall.launched = false;
-                    this.balls.push(newBall);
+                if (hasAttachedBalls) {
+                    // Scenario 1: Ball is attached to paddle - spawn 3 balls from paddle
+                    const paddleCenterX = this.paddle.position.x + this.paddle.width / 2;
+                    const paddleTopY = this.paddle.position.y - 10;
+                    
+                    // Clear all existing balls
+                    this.balls = [];
+                    
+                    // Create 3 new balls positioned on the paddle
+                    for (let i = 0; i < 3; i++) {
+                        const offsetX = (i - 1) * 15; // Spread balls: -15, 0, +15
+                        const newBall = new Ball(
+                            paddleCenterX + offsetX,
+                            paddleTopY,
+                            8
+                        );
+                        newBall.attachedToPaddle = true;
+                        newBall.launched = false;
+                        this.balls.push(newBall);
+                    }
+                    
+                    // Reset ball launch state so all 3 can be launched together
+                    this.ballLaunched = false;
+                } else {
+                    // Scenario 2: Balls are bouncing - spawn 2 additional balls from existing ball positions
+                    const existingBalls = [...this.balls]; // Copy current balls
+                    
+                    for (const ball of existingBalls) {
+                        // Create first additional ball with slight left trajectory
+                        const newBall1 = new Ball(
+                            ball.position.x - 10,
+                            ball.position.y,
+                            ball.radius
+                        );
+                        newBall1.attachedToPaddle = false;
+                        newBall1.launched = true;
+                        newBall1.velocity = new Vector2(ball.velocity.x - 1.5, ball.velocity.y);
+                        this.balls.push(newBall1);
+                        
+                        // Create second additional ball with slight right trajectory
+                        const newBall2 = new Ball(
+                            ball.position.x + 10,
+                            ball.position.y,
+                            ball.radius
+                        );
+                        newBall2.attachedToPaddle = false;
+                        newBall2.launched = true;
+                        newBall2.velocity = new Vector2(ball.velocity.x + 1.5, ball.velocity.y);
+                        this.balls.push(newBall2);
+                    }
                 }
-                
-                // Reset ball launch state so all 3 can be launched together
-                this.ballLaunched = false;
                 break;
             case 'stickyPaddle':
                 this.activateStickyPaddle();
