@@ -234,6 +234,12 @@ class Paddle {
         this.glowIntensity = 0;
         this.isWarning = false;
         this.warningGlowIntensity = 0;
+        this.enlargeTimers = { // Store all active timers for proper cleanup
+            glowInterval: null,
+            warningTimeout: null,
+            warningInterval: null,
+            endTimeout: null
+        };
     }
     
     update(keys, canvasWidth) {
@@ -281,6 +287,9 @@ class Paddle {
     }
     
     enlargePaddle() {
+        // Clear any existing timers when powerup is collected again
+        this.clearEnlargeTimers();
+        
         this.width = Math.min(this.originalWidth * 1.5, 150);
         this.isEnlarged = true;
         this.isWarning = false;
@@ -288,37 +297,52 @@ class Paddle {
         this.warningGlowIntensity = 0;
         
         // Animate normal green glow
-        const glowInterval = setInterval(() => {
+        this.enlargeTimers.glowInterval = setInterval(() => {
             if (!this.isWarning) {
                 this.glowIntensity = 0.5 + Math.sin(Date.now() * 0.01) * 0.5;
             }
         }, 50);
         
         // Start warning glow in the last 2 seconds (faster animation)
-        setTimeout(() => {
+        this.enlargeTimers.warningTimeout = setTimeout(() => {
             this.isWarning = true;
             this.glowIntensity = 0;
             
-            const warningInterval = setInterval(() => {
+            this.enlargeTimers.warningInterval = setInterval(() => {
                 this.warningGlowIntensity = 0.5 + Math.sin(Date.now() * 0.015) * 0.5; // Faster animation
             }, 30);
-            
-            // Clear warning interval after 2 seconds
-            setTimeout(() => {
-                clearInterval(warningInterval);
-            }, 2000);
             
         }, 8000); // Start warning at 8 seconds (2 seconds before end)
         
         // End powerup effect after 10 seconds
-        setTimeout(() => {
+        this.enlargeTimers.endTimeout = setTimeout(() => {
             this.width = this.originalWidth;
             this.isEnlarged = false;
             this.isWarning = false;
             this.glowIntensity = 0;
             this.warningGlowIntensity = 0;
-            clearInterval(glowInterval);
+            this.clearEnlargeTimers();
         }, 10000); // Effect lasts 10 seconds total
+    }
+    
+    clearEnlargeTimers() {
+        // Clear all active timers for paddle enlargement
+        if (this.enlargeTimers.glowInterval) {
+            clearInterval(this.enlargeTimers.glowInterval);
+            this.enlargeTimers.glowInterval = null;
+        }
+        if (this.enlargeTimers.warningTimeout) {
+            clearTimeout(this.enlargeTimers.warningTimeout);
+            this.enlargeTimers.warningTimeout = null;
+        }
+        if (this.enlargeTimers.warningInterval) {
+            clearInterval(this.enlargeTimers.warningInterval);
+            this.enlargeTimers.warningInterval = null;
+        }
+        if (this.enlargeTimers.endTimeout) {
+            clearTimeout(this.enlargeTimers.endTimeout);
+            this.enlargeTimers.endTimeout = null;
+        }
     }
 }
 
@@ -699,10 +723,12 @@ class Game {
         // Reset paddle to original size and remove glow
         this.paddle.width = this.paddle.originalWidth;
         this.paddle.isEnlarged = false;
+        this.paddle.isWarning = false;
         this.paddle.glowIntensity = 0;
+        this.paddle.warningGlowIntensity = 0;
         
-        // Clear any active powerup timers by forcing paddle reset
-        // This will clear any setTimeout intervals for paddle enlargement
+        // Clear any active powerup timers
+        this.paddle.clearEnlargeTimers();
     }
     
     applyPowerup(type) {
