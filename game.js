@@ -549,8 +549,6 @@ class Paddle {
         let paddleColor = this.color;
         if (this.isWarning) {
             paddleColor = '#ff4444';
-        } else if (this.isEnlarged) {
-            paddleColor = '#00ff88';
         } else if (this.isSticky) {
             paddleColor = '#9b59b6';
         }
