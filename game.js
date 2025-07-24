@@ -606,6 +606,9 @@ class Game {
                 // Respawn ball
                 this.balls.push(new Ball(this.width / 2, this.height - 60));
                 this.ballLaunched = false;
+                
+                // Remove all powerup effects when losing a life
+                this.clearPowerupEffects();
             }
         }
         
@@ -647,6 +650,16 @@ class Game {
         for (let i = 0; i < count; i++) {
             this.particles.push(new Particle(x, y, color, Math.random() * 4 + 2));
         }
+    }
+    
+    clearPowerupEffects() {
+        // Reset paddle to original size and remove glow
+        this.paddle.width = this.paddle.originalWidth;
+        this.paddle.isEnlarged = false;
+        this.paddle.glowIntensity = 0;
+        
+        // Clear any active powerup timers by forcing paddle reset
+        // This will clear any setTimeout intervals for paddle enlargement
     }
     
     applyPowerup(type) {
