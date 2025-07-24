@@ -480,8 +480,10 @@ class Paddle {
         this.stickyGlowIntensity = 0;
         this.stickyTimers = {
             glowInterval: null,
-            endTimeout: null
+            endTimeout: null,
+            particleInterval: null
         };
+        this.stickyParticles = [];
     }
     
     update(keys, canvasWidth) {
@@ -499,6 +501,20 @@ class Paddle {
             // Remove barrel if destruction is complete
             if (this.barrel.isDestructionComplete()) {
                 this.barrel = null;
+            }
+        }
+        
+        // Update sticky particles
+        for (let i = this.stickyParticles.length - 1; i >= 0; i--) {
+            const particle = this.stickyParticles[i];
+            particle.position.add(particle.velocity);
+            particle.velocity.y += 0.05; // Gravity
+            particle.life -= 0.02;
+            particle.alpha = Math.max(0, particle.life);
+            
+            // Remove dead particles
+            if (particle.life <= 0) {
+                this.stickyParticles.splice(i, 1);
             }
         }
     }
@@ -550,6 +566,17 @@ class Paddle {
         // Draw laser barrel if active
         if (this.barrel) {
             this.barrel.draw(ctx);
+        }
+        
+        // Draw sticky particles
+        for (const particle of this.stickyParticles) {
+            ctx.save();
+            ctx.globalAlpha = particle.alpha;
+            ctx.fillStyle = particle.color;
+            ctx.beginPath();
+            ctx.arc(particle.position.x, particle.position.y, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
         }
     }
     
@@ -621,6 +648,12 @@ class Paddle {
             clearTimeout(this.stickyTimers.endTimeout);
             this.stickyTimers.endTimeout = null;
         }
+        if (this.stickyTimers.particleInterval) {
+            clearInterval(this.stickyTimers.particleInterval);
+            this.stickyTimers.particleInterval = null;
+        }
+        // Clear all sticky particles
+        this.stickyParticles = [];
     }
     
     activateSticky() {
@@ -634,6 +667,28 @@ class Paddle {
         this.stickyTimers.glowInterval = setInterval(() => {
             this.stickyGlowIntensity = 0.5 + Math.sin(Date.now() * 0.008) * 0.5;
         }, 50);
+        
+        // Create sticky particles
+        this.stickyTimers.particleInterval = setInterval(() => {
+            // Create 2-3 particles every interval
+            const numParticles = Math.floor(Math.random() * 2) + 2;
+            for (let i = 0; i < numParticles; i++) {
+                this.stickyParticles.push({
+                    position: new Vector2(
+                        this.position.x + Math.random() * this.width,
+                        this.position.y + this.height
+                    ),
+                    velocity: new Vector2(
+                        (Math.random() - 0.5) * 1.5,
+                        Math.random() * 0.5 + 0.5
+                    ),
+                    size: Math.random() * 2 + 1,
+                    color: '#9b59b6',
+                    life: 1.0,
+                    alpha: 1.0
+                });
+            }
+        }, 100);
         
         // End sticky effect after 10 seconds
         this.stickyTimers.endTimeout = setTimeout(() => {
