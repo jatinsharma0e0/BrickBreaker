@@ -30,6 +30,74 @@ class Vector2 {
     }
 }
 
+class Particle {
+    constructor(x, y, color = '#fff', size = 3) {
+        this.position = new Vector2(x, y);
+        this.velocity = new Vector2(
+            (Math.random() - 0.5) * 8,
+            (Math.random() - 0.5) * 8
+        );
+        this.color = color;
+        this.size = size;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.01;
+        this.gravity = 0.1;
+    }
+    
+    update() {
+        this.position.add(this.velocity);
+        this.velocity.y += this.gravity;
+        this.life -= this.decay;
+        this.size *= 0.98;
+    }
+    
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+    
+    isDead() {
+        return this.life <= 0 || this.size <= 0.1;
+    }
+}
+
+class ScorePopup {
+    constructor(x, y, score) {
+        this.position = new Vector2(x, y);
+        this.velocity = new Vector2(0, -2);
+        this.score = score;
+        this.life = 1.0;
+        this.decay = 0.02;
+        this.size = 16;
+    }
+    
+    update() {
+        this.position.add(this.velocity);
+        this.velocity.y *= 0.95;
+        this.life -= this.decay;
+        this.size += 0.5;
+    }
+    
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = '#ffff00';
+        ctx.font = `${this.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`+${this.score}`, this.position.x, this.position.y);
+        ctx.restore();
+    }
+    
+    isDead() {
+        return this.life <= 0;
+    }
+}
+
 class Ball {
     constructor(x, y, radius = 8) {
         this.position = new Vector2(x, y);
@@ -38,9 +106,19 @@ class Ball {
         this.color = '#fff';
         this.attachedToPaddle = true;
         this.launched = false;
+        this.trail = []; // For ball trail effect
+        this.maxTrailLength = 8;
     }
     
     update(paddle = null) {
+        // Add current position to trail
+        if (!this.attachedToPaddle) {
+            this.trail.push(this.position.copy());
+            if (this.trail.length > this.maxTrailLength) {
+                this.trail.shift();
+            }
+        }
+        
         if (this.attachedToPaddle && paddle) {
             // Keep ball centered on paddle
             this.position.x = paddle.position.x + paddle.width / 2;
@@ -62,10 +140,36 @@ class Ball {
     }
     
     draw(ctx) {
+        // Draw trail
+        if (this.trail.length > 1) {
+            for (let i = 0; i < this.trail.length - 1; i++) {
+                const alpha = (i + 1) / this.trail.length * 0.5;
+                const size = (i + 1) / this.trail.length * this.radius * 0.7;
+                
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.trail[i].x, this.trail[i].y, size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // Draw main ball
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Add glow effect
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, this.radius + 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
     }
     
     checkWallCollision(canvasWidth, canvasHeight) {
@@ -126,6 +230,8 @@ class Paddle {
         this.speed = 6;
         this.color = '#fff';
         this.originalWidth = width;
+        this.isEnlarged = false;
+        this.glowIntensity = 0;
     }
     
     update(keys, canvasWidth) {
@@ -138,14 +244,40 @@ class Paddle {
     }
     
     draw(ctx) {
-        ctx.fillStyle = this.color;
+        // Draw glow effect when enlarged
+        if (this.isEnlarged && this.glowIntensity > 0) {
+            ctx.save();
+            ctx.globalAlpha = this.glowIntensity * 0.5;
+            ctx.fillStyle = '#00ff88';
+            ctx.fillRect(this.position.x - 3, this.position.y - 3, this.width + 6, this.height + 6);
+            ctx.restore();
+        }
+        
+        // Draw main paddle
+        ctx.fillStyle = this.isEnlarged ? '#00ff88' : this.color;
         ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+        
+        // Add border
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
     }
     
     enlargePaddle() {
         this.width = Math.min(this.originalWidth * 1.5, 150);
+        this.isEnlarged = true;
+        this.glowIntensity = 1.0;
+        
+        // Animate glow
+        const glowInterval = setInterval(() => {
+            this.glowIntensity = 0.5 + Math.sin(Date.now() * 0.01) * 0.5;
+        }, 50);
+        
         setTimeout(() => {
             this.width = this.originalWidth;
+            this.isEnlarged = false;
+            this.glowIntensity = 0;
+            clearInterval(glowInterval);
         }, 10000); // Effect lasts 10 seconds
     }
 }
@@ -157,6 +289,8 @@ class Brick {
         this.height = height;
         this.destroyed = false;
         this.color = this.getRandomColor();
+        this.destructionAnimation = 0;
+        this.isDestroying = false;
     }
     
     getRandomColor() {
@@ -164,13 +298,50 @@ class Brick {
         return colors[Math.floor(Math.random() * colors.length)];
     }
     
+    update() {
+        if (this.isDestroying) {
+            this.destructionAnimation += 0.1;
+            if (this.destructionAnimation >= 1) {
+                this.destroyed = true;
+                this.isDestroying = false;
+            }
+        }
+    }
+    
+    startDestruction() {
+        this.isDestroying = true;
+        this.destructionAnimation = 0;
+    }
+    
     draw(ctx) {
         if (!this.destroyed) {
+            ctx.save();
+            
+            if (this.isDestroying) {
+                // Destruction animation
+                const scale = 1 - this.destructionAnimation;
+                const alpha = 1 - this.destructionAnimation;
+                
+                ctx.globalAlpha = alpha;
+                ctx.translate(
+                    this.position.x + this.width / 2, 
+                    this.position.y + this.height / 2
+                );
+                ctx.scale(scale, scale);
+                ctx.translate(-this.width / 2, -this.height / 2);
+                
+                // Add rotation during destruction
+                ctx.rotate(this.destructionAnimation * Math.PI * 0.5);
+                ctx.translate(-this.width / 2, -this.height / 2);
+            }
+            
             ctx.fillStyle = this.color;
-            ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+            ctx.fillRect(0, 0, this.width, this.height);
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 1;
-            ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+            ctx.strokeRect(0, 0, this.width, this.height);
+            
+            ctx.restore();
         }
     }
     
@@ -187,7 +358,7 @@ class Brick {
             ballBottom >= this.position.y && 
             ballTop <= this.position.y + this.height) {
             
-            this.destroyed = true;
+            this.startDestruction();
             
             // Determine collision side for proper ball reflection
             const brickCenterX = this.position.x + this.width / 2;
@@ -282,6 +453,8 @@ class Game {
         this.balls = [];
         this.bricks = [];
         this.powerups = [];
+        this.particles = [];
+        this.scorePopups = [];
         this.ballLaunched = false;
         
         this.init();
@@ -300,8 +473,10 @@ class Game {
         // Create bricks
         this.createBricks();
         
-        // Reset powerups
+        // Reset powerups and effects
         this.powerups = [];
+        this.particles = [];
+        this.scorePopups = [];
         
         // Update UI
         this.updateUI();
@@ -375,6 +550,21 @@ class Game {
                 if (brick.checkCollision(ball)) {
                     this.score += 10;
                     
+                    // Create particle explosion
+                    this.createParticleExplosion(
+                        brick.position.x + brick.width / 2,
+                        brick.position.y + brick.height / 2,
+                        brick.color,
+                        8
+                    );
+                    
+                    // Create score popup
+                    this.scorePopups.push(new ScorePopup(
+                        brick.position.x + brick.width / 2,
+                        brick.position.y + brick.height / 2,
+                        10
+                    ));
+                    
                     // Chance to spawn powerup
                     if (Math.random() < 0.25) { // 25% chance
                         const powerupTypes = ['largePaddle', 'extraLife', 'multiBall'];
@@ -425,7 +615,36 @@ class Game {
             document.getElementById('winScore').textContent = this.score;
         }
         
+        // Update bricks
+        for (const brick of this.bricks) {
+            brick.update();
+        }
+        
+        // Update particles
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const particle = this.particles[i];
+            particle.update();
+            if (particle.isDead()) {
+                this.particles.splice(i, 1);
+            }
+        }
+        
+        // Update score popups
+        for (let i = this.scorePopups.length - 1; i >= 0; i--) {
+            const popup = this.scorePopups[i];
+            popup.update();
+            if (popup.isDead()) {
+                this.scorePopups.splice(i, 1);
+            }
+        }
+        
         this.updateUI();
+    }
+    
+    createParticleExplosion(x, y, color, count) {
+        for (let i = 0; i < count; i++) {
+            this.particles.push(new Particle(x, y, color, Math.random() * 4 + 2));
+        }
     }
     
     applyPowerup(type) {
@@ -470,6 +689,12 @@ class Game {
         this.balls.forEach(ball => ball.draw(this.ctx));
         this.bricks.forEach(brick => brick.draw(this.ctx));
         this.powerups.forEach(powerup => powerup.draw(this.ctx));
+        
+        // Draw particles
+        this.particles.forEach(particle => particle.draw(this.ctx));
+        
+        // Draw score popups
+        this.scorePopups.forEach(popup => popup.draw(this.ctx));
     }
     
     updateUI() {
