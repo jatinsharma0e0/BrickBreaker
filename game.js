@@ -938,21 +938,11 @@ class Powerup {
                 ctx.fill();
                 
             } else {
-                // Draw powerup background for other types
-                ctx.fillStyle = this.colors[this.type];
-                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-                
-                // Add border
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
-                
                 // Draw symbol (emoji or letter)
                 if (this.symbols[this.type]) {
-                    ctx.fillStyle = '#fff';
                     if (this.isEmoji(this.symbols[this.type])) {
-                        // Draw emoji
-                        ctx.font = '14px Arial';
+                        // Draw emoji without background
+                        ctx.font = '16px Arial';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText(
@@ -961,7 +951,17 @@ class Powerup {
                             this.position.y + this.height / 2
                         );
                     } else {
+                        // Draw powerup background for letter types only
+                        ctx.fillStyle = this.colors[this.type];
+                        ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                        
+                        // Add border
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+                        
                         // Draw letter
+                        ctx.fillStyle = '#fff';
                         ctx.font = 'bold 12px Arial';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
