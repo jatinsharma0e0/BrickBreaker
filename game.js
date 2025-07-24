@@ -36,10 +36,29 @@ class Ball {
         this.velocity = new Vector2(3, -3);
         this.radius = radius;
         this.color = '#fff';
+        this.attachedToPaddle = true;
+        this.launched = false;
     }
     
-    update() {
-        this.position.add(this.velocity);
+    update(paddle = null) {
+        if (this.attachedToPaddle && paddle) {
+            // Keep ball centered on paddle
+            this.position.x = paddle.position.x + paddle.width / 2;
+            this.position.y = paddle.position.y - this.radius - 2;
+        } else {
+            this.position.add(this.velocity);
+        }
+    }
+    
+    launch() {
+        if (this.attachedToPaddle) {
+            this.attachedToPaddle = false;
+            this.launched = true;
+            // Launch ball upward with slight random angle
+            const angle = (Math.random() - 0.5) * 0.3; // Random angle between -0.15 and 0.15 radians
+            this.velocity.x = Math.sin(angle) * 4;
+            this.velocity.y = -Math.cos(angle) * 4;
+        }
     }
     
     draw(ctx) {
@@ -263,6 +282,7 @@ class Game {
         this.balls = [];
         this.bricks = [];
         this.powerups = [];
+        this.ballLaunched = false;
         
         this.init();
         this.setupEventListeners();
@@ -275,6 +295,7 @@ class Game {
         
         // Create initial ball
         this.balls = [new Ball(this.width / 2, this.height - 60)];
+        this.ballLaunched = false;
         
         // Create bricks
         this.createBricks();
@@ -318,13 +339,27 @@ class Game {
     update() {
         if (this.gameState !== 'playing') return;
         
+        // Handle ball launch
+        if (this.keys['ArrowUp'] && !this.ballLaunched) {
+            for (const ball of this.balls) {
+                if (ball.attachedToPaddle) {
+                    ball.launch();
+                    this.ballLaunched = true;
+                    break;
+                }
+            }
+        }
+        
         // Update paddle
         this.paddle.update(this.keys, this.width);
         
         // Update balls
         for (let i = this.balls.length - 1; i >= 0; i--) {
             const ball = this.balls[i];
-            ball.update();
+            ball.update(this.paddle);
+            
+            // Skip collision checks for attached balls
+            if (ball.attachedToPaddle) continue;
             
             // Check wall collisions
             if (ball.checkWallCollision(this.width, this.height)) {
@@ -378,6 +413,7 @@ class Game {
             } else {
                 // Respawn ball
                 this.balls.push(new Ball(this.width / 2, this.height - 60));
+                this.ballLaunched = false;
             }
         }
         
@@ -403,12 +439,21 @@ class Game {
             case 'multiBall':
                 if (this.balls.length === 1) {
                     const originalBall = this.balls[0];
-                    this.balls.push(new Ball(
+                    const newBall = new Ball(
                         originalBall.position.x - 20,
                         originalBall.position.y,
                         originalBall.radius
-                    ));
-                    this.balls[1].velocity = new Vector2(-3, -3);
+                    );
+                    // If original ball is attached, new ball should also be attached
+                    if (originalBall.attachedToPaddle) {
+                        newBall.attachedToPaddle = true;
+                        newBall.launched = false;
+                    } else {
+                        newBall.attachedToPaddle = false;
+                        newBall.launched = true;
+                        newBall.velocity = new Vector2(-3, -3);
+                    }
+                    this.balls.push(newBall);
                 }
                 break;
         }
