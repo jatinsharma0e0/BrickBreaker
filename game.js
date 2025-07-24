@@ -518,12 +518,15 @@ class Game {
         
         // Handle ball launch
         if (this.keys['ArrowUp'] && !this.ballLaunched) {
+            let hasAttachedBalls = false;
             for (const ball of this.balls) {
                 if (ball.attachedToPaddle) {
                     ball.launch();
-                    this.ballLaunched = true;
-                    break;
+                    hasAttachedBalls = true;
                 }
+            }
+            if (hasAttachedBalls) {
+                this.ballLaunched = true;
             }
         }
         
