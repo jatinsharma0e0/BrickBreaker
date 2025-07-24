@@ -4,13 +4,13 @@ A modern, feature-rich implementation of the classic Brick Breaker arcade game b
 
 ## 🎮 Demo & Screenshots
 
-![Game Start](attached_assets/image_1753347104892.png)
+![Game Start](screenshots/image_1753347104892.png)
 *Game start screen showing colorful brick layout and control panel*
 
-![Active Gameplay](attached_assets/image_1753347098461.png)
+![Active Gameplay](screenshots/image_1753347098461.png)
 *Mid-game action with particle effects and score display*
 
-![Powerup Collection](attached_assets/image_1753347093168.png)
+![Powerup Collection](screenshots/image_1753347093168.png)
 *Powerup system in action with visual effects*
 
 ## ✨ Features
@@ -22,9 +22,9 @@ A modern, feature-rich implementation of the classic Brick Breaker arcade game b
 - **Progressive Difficulty** - Strategic brick layouts and challenging gameplay
 
 ### Powerup System (8 Unique Types)
-- 🟢 **Larger Paddle** - Extends paddle width with visual glow effects
+- 🟩 **Larger Paddle** - Extends paddle width with visual glow effects
 - ❤️ **Extra Life** - Grants additional lives for extended gameplay
-- 🟨 **Multi-Ball** - Spawns multiple balls (3 from paddle, 2 from bouncing ball)
+- ⚪ **Multi-Ball** - Spawns multiple balls (3 from paddle, 2 from bouncing ball)
 - 🟪 **Sticky Paddle** - Balls attach to paddle for strategic positioning
 - 🔫 **Laser Paddle** - Fire lasers with spacebar to destroy bricks
 - ⏳ **Slow Motion** - Reduces game speed for precision control
@@ -74,7 +74,7 @@ brick-breaker/
 ├── style.css           # Game styling and layout
 ├── game.js             # Complete game logic and classes
 ├── README.md           # Project documentation
-└── attached_assets/    # Screenshots and assets
+└── screenshots/    # Screenshots
 ```
 
 ## 🎯 How to Play
