@@ -269,14 +269,35 @@ class Ball {
         ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
         
-        // Add glow effect
-        ctx.save();
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.position.x, this.position.y, this.radius + 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
+        // Enhanced glow effect for fireball
+        if (this.isFireball) {
+            // Outer glow (orange)
+            ctx.save();
+            ctx.globalAlpha = 0.6;
+            ctx.fillStyle = '#ff8c00';
+            ctx.beginPath();
+            ctx.arc(this.position.x, this.position.y, this.radius + 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // Inner glow (yellow)
+            ctx.save();
+            ctx.globalAlpha = 0.4;
+            ctx.fillStyle = '#ffd700';
+            ctx.beginPath();
+            ctx.arc(this.position.x, this.position.y, this.radius + 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        } else {
+            // Normal glow effect
+            ctx.save();
+            ctx.globalAlpha = 0.3;
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.position.x, this.position.y, this.radius + 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
     }
     
     checkWallCollision(canvasWidth, canvasHeight) {
@@ -536,18 +557,22 @@ class Brick {
             
             this.startDestruction();
             
-            // Determine collision side for proper ball reflection
-            const brickCenterX = this.position.x + this.width / 2;
-            const brickCenterY = this.position.y + this.height / 2;
-            
-            const dx = ball.position.x - brickCenterX;
-            const dy = ball.position.y - brickCenterY;
-            
-            if (Math.abs(dx / this.width) > Math.abs(dy / this.height)) {
-                ball.velocity.x = -ball.velocity.x;
-            } else {
-                ball.velocity.y = -ball.velocity.y;
+            // Only bounce off bricks if it's NOT a fireball
+            if (!ball.isFireball) {
+                // Determine collision side for proper ball reflection
+                const brickCenterX = this.position.x + this.width / 2;
+                const brickCenterY = this.position.y + this.height / 2;
+                
+                const dx = ball.position.x - brickCenterX;
+                const dy = ball.position.y - brickCenterY;
+                
+                if (Math.abs(dx / this.width) > Math.abs(dy / this.height)) {
+                    ball.velocity.x = -ball.velocity.x;
+                } else {
+                    ball.velocity.y = -ball.velocity.y;
+                }
             }
+            // Fireball continues through without changing direction
             
             return true;
         }
