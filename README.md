@@ -208,9 +208,9 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 For questions, feedback, or collaboration opportunities:
 
-- **Project Repository** - [Your GitHub/Replit URL]
-- **Email** - [your.email@example.com]
-- **Discord/Social** - [Your preferred contact method]
+- **Project Repository** - [https://github.com/jatinsharma0e0/BrickBreaker]
+- **Email** - [jatin0e0help@gmail.com]
+- **Discord/Social** - [@jatin0e0]
 
 ### Feedback Welcome
 - **Feature Requests** - Suggest new powerups or game mechanics
