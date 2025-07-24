@@ -315,10 +315,9 @@ class Brick {
     
     draw(ctx) {
         if (!this.destroyed) {
-            ctx.save();
-            
             if (this.isDestroying) {
                 // Destruction animation
+                ctx.save();
                 const scale = 1 - this.destructionAnimation;
                 const alpha = 1 - this.destructionAnimation;
                 
@@ -328,20 +327,23 @@ class Brick {
                     this.position.y + this.height / 2
                 );
                 ctx.scale(scale, scale);
-                ctx.translate(-this.width / 2, -this.height / 2);
-                
-                // Add rotation during destruction
                 ctx.rotate(this.destructionAnimation * Math.PI * 0.5);
-                ctx.translate(-this.width / 2, -this.height / 2);
+                
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+                
+                ctx.restore();
+            } else {
+                // Normal drawing
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
             }
-            
-            ctx.fillStyle = this.color;
-            ctx.fillRect(0, 0, this.width, this.height);
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(0, 0, this.width, this.height);
-            
-            ctx.restore();
         }
     }
     
