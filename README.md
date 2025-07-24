@@ -1,6 +1,7 @@
 # 🧱 Brick Breaker Game
 
 A modern, feature-rich implementation of the classic Brick Breaker arcade game built with pure HTML5, CSS3, and JavaScript. Experience smooth 60fps gameplay with advanced powerups, particle effects, and responsive design.
+
 **Play here 👉🏻** - [https://bricksmasher.vercel.app]
 
 ## 🎮 Demo & Screenshots
