@@ -232,6 +232,8 @@ class Paddle {
         this.originalWidth = width;
         this.isEnlarged = false;
         this.glowIntensity = 0;
+        this.isWarning = false;
+        this.warningGlowIntensity = 0;
     }
     
     update(keys, canvasWidth) {
@@ -244,8 +246,16 @@ class Paddle {
     }
     
     draw(ctx) {
-        // Draw glow effect when enlarged
-        if (this.isEnlarged && this.glowIntensity > 0) {
+        // Draw warning glow effect (red) when about to end
+        if (this.isWarning && this.warningGlowIntensity > 0) {
+            ctx.save();
+            ctx.globalAlpha = this.warningGlowIntensity * 0.7;
+            ctx.fillStyle = '#ff4444';
+            ctx.fillRect(this.position.x - 4, this.position.y - 4, this.width + 8, this.height + 8);
+            ctx.restore();
+        }
+        // Draw normal glow effect (green) when enlarged
+        else if (this.isEnlarged && this.glowIntensity > 0) {
             ctx.save();
             ctx.globalAlpha = this.glowIntensity * 0.5;
             ctx.fillStyle = '#00ff88';
@@ -254,7 +264,14 @@ class Paddle {
         }
         
         // Draw main paddle
-        ctx.fillStyle = this.isEnlarged ? '#00ff88' : this.color;
+        let paddleColor = this.color;
+        if (this.isWarning) {
+            paddleColor = '#ff4444';
+        } else if (this.isEnlarged) {
+            paddleColor = '#00ff88';
+        }
+        
+        ctx.fillStyle = paddleColor;
         ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
         
         // Add border
@@ -266,19 +283,42 @@ class Paddle {
     enlargePaddle() {
         this.width = Math.min(this.originalWidth * 1.5, 150);
         this.isEnlarged = true;
+        this.isWarning = false;
         this.glowIntensity = 1.0;
+        this.warningGlowIntensity = 0;
         
-        // Animate glow
+        // Animate normal green glow
         const glowInterval = setInterval(() => {
-            this.glowIntensity = 0.5 + Math.sin(Date.now() * 0.01) * 0.5;
+            if (!this.isWarning) {
+                this.glowIntensity = 0.5 + Math.sin(Date.now() * 0.01) * 0.5;
+            }
         }, 50);
         
+        // Start warning glow in the last 2 seconds (faster animation)
+        setTimeout(() => {
+            this.isWarning = true;
+            this.glowIntensity = 0;
+            
+            const warningInterval = setInterval(() => {
+                this.warningGlowIntensity = 0.5 + Math.sin(Date.now() * 0.015) * 0.5; // Faster animation
+            }, 30);
+            
+            // Clear warning interval after 2 seconds
+            setTimeout(() => {
+                clearInterval(warningInterval);
+            }, 2000);
+            
+        }, 8000); // Start warning at 8 seconds (2 seconds before end)
+        
+        // End powerup effect after 10 seconds
         setTimeout(() => {
             this.width = this.originalWidth;
             this.isEnlarged = false;
+            this.isWarning = false;
             this.glowIntensity = 0;
+            this.warningGlowIntensity = 0;
             clearInterval(glowInterval);
-        }, 10000); // Effect lasts 10 seconds
+        }, 10000); // Effect lasts 10 seconds total
     }
 }
 

@@ -4,6 +4,13 @@
 
 This project has been converted to a pure HTML5, CSS3, and JavaScript Brick Breaker game. The project now consists of a standalone game that runs directly in the browser without any frameworks, build tools, or server dependencies. The original React/Express architecture has been replaced with a simple file structure for maximum compatibility and ease of deployment.
 
+## Recent Changes (Updated July 24, 2025)
+
+- **Migration Completed**: Successfully migrated from Replit Agent to standard Replit environment
+- **Multi-ball Launch Fix**: Fixed issue where only one ball would launch when multi-ball powerup was collected while ball was attached to paddle
+- **Enhanced Visual Feedback**: Added red warning glow effect to large paddle powerup in the final 2 seconds before it expires
+- **Python 3.11 Installation**: Added Python 3.11 for HTTP server functionality
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -51,6 +58,8 @@ Preferred communication style: Simple, everyday language.
 - **Scoring System**: 10 points per brick, score and lives tracking
 - **Win/Lose Conditions**: Clear all bricks to win, lose all lives for game over
 - **Visual Polish**: Colorful bricks, smooth animations, game over/win screens
+- **Enhanced Powerup Feedback**: Large paddle powerup includes green glow effect with red warning glow in final 2 seconds
+- **Multi-ball Launch Fix**: All attached balls launch simultaneously when pressing up arrow
 
 ## Data Flow
 
